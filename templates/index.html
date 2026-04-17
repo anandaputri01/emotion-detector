@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emotion Detector</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            padding: 2rem;
+            z-index: 10;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 2.5rem;
+            font-size: 1.1rem;
+        }
+
+        .input-group {
+            margin-bottom: 2rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 400;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-left: 0.5rem;
+        }
+
+        textarea {
+            width: 100%;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            color: var(--text);
+            font-size: 1rem;
+            resize: none;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+        }
+
+        button {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+        }
+
+        button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.4);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        #system_response {
+            margin-top: 2.5rem;
+            padding: 1.5rem;
+            border-radius: 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border-left: 4px solid var(--primary);
+            font-size: 1rem;
+            line-height: 1.6;
+            min-height: 60px;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Decorative blobs */
+        .blob {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(192, 132, 252, 0.2) 100%);
+            filter: blur(80px);
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        .blob-1 { top: -100px; left: -100px; }
+        .blob-2 { bottom: -100px; right: -100px; }
+
+    </style>
+</head>
+<body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <div class="container">
+        <div class="card">
+            <h1>Emotion Detector</h1>
+            <p class="subtitle">Understand the feelings behind the words</p>
+            
+            <div class="input-group">
+                <label for="textToAnalyze">Enter your text here:</label>
+                <textarea id="textToAnalyze" rows="4" placeholder="How are you feeling today?"></textarea>
+            </div>
+            
+            <button onclick="runSentimentAnalysis()">Analyze Emotion</button>
+            
+            <div id="system_response"></div>
+        </div>
+    </div>
+
+    <script>
+        function runSentimentAnalysis() {
+            const textToAnalyze = document.getElementById("textToAnalyze").value;
+            const responseDiv = document.getElementById("system_response");
+
+            if (!textToAnalyze.trim()) {
+                responseDiv.innerHTML = "Please enter some text to analyze.";
+                responseDiv.style.display = "block";
+                responseDiv.style.color = "#f87171";
+                return;
+            }
+
+            responseDiv.innerHTML = "Analyzing...";
+            responseDiv.style.display = "block";
+            responseDiv.style.color = "var(--text)";
+
+            let xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    responseDiv.innerHTML = xhttp.responseText;
+                    responseDiv.style.color = "var(--text)";
+                } else if (this.readyState == 4) {
+                    responseDiv.innerHTML = "Error occurred. Please try again.";
+                    responseDiv.style.color = "#f87171";
+                }
+            };
+            xhttp.open("GET", "emotionDetector?textToAnalyze=" + encodeURIComponent(textToAnalyze), true);
+            xhttp.send();
+        }
+    </script>
+</body>
+</html>
